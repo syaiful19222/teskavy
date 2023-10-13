@@ -30,10 +30,20 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-      - name: Install AIDL
+      - name: Install build-essential
         run: |
           sudo apt-get update
-          sudo apt-get install -y aidl
+          sudo apt-get install build-essential
+
+      - name: Install libstdc++6
+        run: |
+          sudo apt-get update
+          sudo apt-get install libstdc++6
+
+      - name: Install aidl
+        run: |
+          sudo apt-get update
+          sudo apt-get install aidl
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
