@@ -1,52 +1,32 @@
 name: CI
-
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v2
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
-
+      # used to cache dependencies with a timeout
       - name: Get Date
         id: get-date
         run: |
           echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
         shell: bash
 
-      - name: Cache Buildozer directory
+      - name: Cache Buildozer global directory
         uses: actions/cache@v2
+        with:
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
+
+      - uses: actions/cache@v2
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
-
-      - name: Install build-essential, ccache, and other dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential ccache git libncurses5:i386 libstdc++6:i386 libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 libidn11:i386 python2.7 python2.7-dev openjdk-8-jdk unzip zlib1g-dev zlib1g:i386
-
-      - name: Install/updgrade Cython
-        run: |
-          sudo pip install --upgrade cython==0.21
-
-      - name: Add i386 architecture
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-
-      - name: Install aidl
-        run: |
-          sudo apt-get install aidl
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
