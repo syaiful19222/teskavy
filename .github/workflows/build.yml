@@ -1,32 +1,55 @@
 name: CI
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # used to cache dependencies with a timeout
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v2
+        with:
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+
       - name: Get Date
         id: get-date
         run: |
           echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
         shell: bash
 
-      - name: Cache Buildozer global directory
+      - name: Cache Buildozer directory
         uses: actions/cache@v2
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
-
-      - uses: actions/cache@v2
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+
+      - name: Install build-essential
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential
+
+      - name: Install libstdc++6
+        run: |
+          sudo apt-get update
+          sudo apt-get install libstdc++6
+
+      - name: Install aidl
+        run: |
+          sudo apt-get update
+          sudo apt-get install aidl
+
+      - name: Install Android Build Tools
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin/
+          export PATH="$PATH:~/.buildozer/android/platform/android-sdk/tools/bin/"
+          echo "y" | sdkmanager "build-tools;29.0.0"
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
